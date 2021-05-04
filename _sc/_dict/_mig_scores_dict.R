@@ -19,8 +19,8 @@ library(pbapply)
 
 ## load dict
 dict <- read.csv("_dicts/german_glove_alt.csv")$x
-
 papers <- c("bild", "faz", "spon", "sz", "taz", "weltonline")
+n_sample <- 100
 
 for (p in papers){
   
@@ -28,7 +28,7 @@ for (p in papers){
   
   ## load newspaper articles
   cat("\tLoading data...")
-  raw <- fread(here(paste0("_dt/_out/_", p, "_articles.csv")))
+  raw <- fread(here(paste0("_dt/_out/_", p, "_articles.csv")))[,c("title", "url", "text")]
   ncols_raw <- ncol(raw)
   
   # assign scores & sample ####
@@ -41,23 +41,28 @@ for (p in papers){
   
   raw$sum <- rowSums(raw[,(ncols_raw+1):ncol(raw)])
   raw$ntokens <- str_length(raw$text)
-  raw$mig_share <- raw$sum/raw$ntokens
+  raw$mig_share <- (raw$sum/raw$ntokens)
   
   ## pull stratified sample
   cat("\tPulling stratified sample...")
   
-  ### sample 200 cases from articles low, mid, and high on migration mentions
-  low_sample <- 
-  mid_sample <- 
-  high_sample <- 
+  ### sample 100 cases from articles low, mid, and high on migration mentions
+  quantiles_nozero <- quantile(raw$mig_share[raw$mig_share != 0], na.rm = T)
+  low_sample <- sample_n(raw[raw$mig_share == 0], n_sample)
+  mid_sample <- sample_n(raw[raw$mig_share > quantiles_nozero[2] &
+                             raw$mig_share < quantiles_nozero[4]], n_sample)
+  high_sample <- sample_n(raw[raw$mig_share > quantiles_nozero[4]], n_sample)
   
   
-  ## add to overall sample
-  
-  ## delete full set
+  ## combine to overall sample
+  if(!"full_sample" %in% ls()){
+    full_sample <- rbind(low_sample, mid_sample, high_sample)
+  }else{
+    full_sample <- rbind(full_sample, low_sample, mid_sample, high_sample)
+  }
   
 }
 
 # save sample ####
-
+fwrite(full_sample, file = here("_dt/sample_handcoding.csv"))
 
