@@ -18,7 +18,7 @@ library(pbapply)
 # load data ####
 
 ## load dict
-dict <- read.csv("_dicts/german_glove_alt.csv")$x
+dict <- sort(read.csv("_dicts/german_glove.csv")$x)
 papers <- c("bild", "faz", "spon", "sz", "taz", "weltonline")
 n_sample <- 100
 
@@ -27,15 +27,16 @@ for (p in papers){
   cat(paste("\n\nSampling", p, "..."))
   
   ## load newspaper articles
-  cat("\tLoading data...")
-  raw <- fread(here(paste0("_dt/_out/_", p, "_articles.csv")))[,c("title", "url", "text")]
+  cat("\n\tLoading data...")
+  raw <- fread(here(paste0("_dt/_out/_", p, "_articles.csv")), encoding = "UTF-8")[,c("title", "url", "text")]
   ncols_raw <- ncol(raw)
   
   # assign scores & sample ####
   
   ## count occurences/article length
-  cat("\tAssigning dictionary scores...")
+  cat("\n\tAssigning dictionary scores...")
   for (d in dict){
+    cat(paste0('\n\t\tCounting occurrences of "', d, '"...'))
     raw[,eval(d)] <- str_count(raw$text, d)
   }
   
@@ -44,14 +45,14 @@ for (p in papers){
   raw$mig_share <- (raw$sum/raw$ntokens)
   
   ## pull stratified sample
-  cat("\tPulling stratified sample...")
+  cat("\n\tPulling stratified sample...")
   
   ### sample 100 cases from articles low, mid, and high on migration mentions
-  quantiles_nozero <- quantile(raw$mig_share[raw$mig_share != 0], na.rm = T)
-  low_sample <- sample_n(raw[raw$mig_share == 0], n_sample)
-  mid_sample <- sample_n(raw[raw$mig_share > quantiles_nozero[2] &
-                             raw$mig_share < quantiles_nozero[4]], n_sample)
-  high_sample <- sample_n(raw[raw$mig_share > quantiles_nozero[4]], n_sample)
+  quantiles_nozero <- quantile(raw$sum[raw$sum != 0], na.rm = T)
+  low_sample <- sample_n(raw[raw$sum == 0], n_sample)
+  mid_sample <- sample_n(raw[raw$sum >= quantiles_nozero[2] &
+                               raw$sum <= quantiles_nozero[4]], n_sample)
+  high_sample <- sample_n(raw[raw$sum > quantiles_nozero[4]], n_sample)
   
   
   ## combine to overall sample
@@ -64,5 +65,5 @@ for (p in papers){
 }
 
 # save sample ####
-fwrite(full_sample, file = here("_dt/sample_handcoding.csv"))
+fwrite(full_sample, file = here(paste0("_dt/sample_handcoding_", Sys.Date(), ".csv")))
 
