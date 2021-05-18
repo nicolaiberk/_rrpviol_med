@@ -174,6 +174,7 @@ server <- function(input, output, session) {
     
     # import sample
     dta <<- fread(here("_dt/sample_handcoding.csv"), encoding = "UTF-8")[, c("title", "url", "text")]
+    dta <<- sample_n(dta, nrow(dta))  # reorder rows
     
     # define initial text
     i <<- 1
