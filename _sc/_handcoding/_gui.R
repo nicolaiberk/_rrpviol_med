@@ -354,15 +354,7 @@ server <- function(input, output, session) {
     # import sample
     tryCatch(
       {
-        dta <<- fread(paste0("handcoding_", input$name, ".csv"), encoding = "UTF-8")
-        dta$mig_cat_oe <- as.character(dta$mig_cat_oe) # ensures correct data format when importing
-        dta$mig_geo    <- as.character(dta$mig_geo)    # ensures correct data format when importing
-        dta$mig_unklar <- as.character(dta$mig_unklar) # ensures correct data format when importing
-        dta$laworder_unklar <- as.character(dta$laworder_unklar) # ensures correct data format when importing
-        dta$climate_unklar <- as.character(dta$climate_unklar) # ensures correct data format when importing
-        dta$social_unklar <- as.character(dta$social_unklar) # ensures correct data format when importing
-        dta$afd_cat_oe <- as.character(dta$afd_cat_oe) # ensures correct data format when importing
-        dta$afd_unklar <- as.character(dta$afd_unklar) # ensures correct data format when importing
+        dta <<- fread(paste0("handcoding_", input$name, ".csv"), encoding = "UTF-8", na.strings = NULL)
       }, error = function(e){
         showModal(modalDialog(
           title = paste0("Keine existierende Datei gefunden: 'handcoding_", input$name, ".csv'. Sicher, dass Du den Namen korrekt angegeben hast?"),
@@ -371,6 +363,16 @@ server <- function(input, output, session) {
                            actionButton("loadfile", "Lade existierendes file..."))
         ))
       })
+    
+    dta$mig_cat_oe[is.na(dta$mig_cat_oe)]           <<- "" # ensures correct data format when importing
+    dta$mig_geo[is.na(dta$mig_geo)]                 <<- "" # ensures correct data format when importing
+    dta$mig_unklar[is.na(dta$mig_unklar)]           <<- "" # ensures correct data format when importing
+    dta$laworder_unklar[is.na(dta$laworder_unklar)] <<- "" # ensures correct data format when importing
+    dta$climate_unklar[is.na(dta$climate_unklar)]   <<- "" # ensures correct data format when importing
+    dta$social_unklar[is.na(dta$social_unklar)]     <<- "" # ensures correct data format when importing
+    dta$afd_cat_oe[is.na(dta$afd_cat_oe)]           <<- "" # ensures correct data format when importing
+    dta$afd_unklar[is.na(dta$afd_unklar)]           <<- "" # ensures correct data format when importing
+    dta$afd_oth[is.na(dta$afd_oth)]                 <<- "" # ensures correct data format when importing
     
     # define initial text
     i <<- (1 + nrow(dta) - sum(dta$mig == "")) # starting point  = 1 + number of rows - number of uncoded rows 
@@ -412,8 +414,8 @@ server <- function(input, output, session) {
     removeModal()
   })
   
-  output$progress <- renderText({ 
-    paste("Coding #", (input$nextpage+1-input$back), "of", rowsToCode, "remaining articles.")
+  output$progress <- renderText({
+    paste("Coding #", (input$nextpage+1-input$back), "of", ifelse(exists("rowsToCode"), rowsToCode, ""), "remaining articles.")
   })
   
   
@@ -478,7 +480,8 @@ server <- function(input, output, session) {
       }
       
       # Update textfields
-      for (x in c("mig_unklar", "mig_oth", "mig_geo", "laworder_unklar", "climate_unklar", "social_unklar", "afd_unklar")){
+      for (x in c("mig_unklar", "mig_oth", "mig_geo", "laworder_unklar", 
+                  "climate_unklar", "social_unklar", "afd_unklar", "afd_oth")){
         updateTextInput(session = session, inputId = x, value = "")
       }
       
