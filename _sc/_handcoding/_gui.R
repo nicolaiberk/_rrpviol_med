@@ -19,6 +19,101 @@ library(shiny)
 # setup ui
 
 ui <- fluidPage(
+  tags$head(
+    # Note the wrapping of the string in HTML()
+    tags$style(HTML("
+      
+      
+    body {
+      background-color:white;
+      font-family: 'Lato', sans-serif;
+    }
+    
+    body{
+    color: black; 
+    text-align:justify;
+    font-size:16px;
+    }
+    
+    img {
+      vertical-align: bottom;
+    }
+    
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    h1, .h1 {
+      display: none;
+    }
+    
+    
+    h2, .h2 {
+      color: #0e5484;
+      text-decoration: underline;
+    }
+    
+    h3, .h3  {
+        margin-top: 18px;
+        color: #0e5484;
+    }
+    
+    h4, .h4  {
+        margin-top: 12px;
+          color: #0e5484;
+    }
+    
+    /* link */
+    a, .navbar-default .navbar-nav > .active > a {
+      color: #0e5484;
+    }
+    
+    a:active, a:hover{
+      color: #0e5484;
+      text-decoration: underline;
+    }
+    
+    a p {
+      display:none;
+    }
+    
+    a:hover p {
+      display:block;
+    }
+    
+    span {
+      color: #0e5484;
+      font-weight: bold;
+    }
+    
+    .btn {
+        border-width: 0 0 0 0;
+        font-weight: bold;
+    }
+    
+    /* brand name in menu */
+    .navbar-default .navbar-brand {
+      color: #0e5484;
+    }
+    
+    .btn-default, .nav-pills:active>a {
+        color: white;
+        background-color: #6892D3;
+        border-color: white;
+    }
+    
+    .navbar-default{
+      background-color: #6892D3;
+    }
+    
+    .nav-pills:hover>a, .nav-pills>li>a, .navbar-default .navbar-nav>li>a:hover  {
+        color: white;
+        background-color: #0e5484;
+        border-color: white;
+    }"))
+  ),
   
   # Application title
   titlePanel(paste0("Handkodierung Nachrichtenartikel")),
@@ -48,12 +143,16 @@ ui <- fluidPage(
       br(),
       br(),
       
+      h3("Nimmt der Artikel Bezug auf das Thema..."),
+      
+      br(),
+      
       column(
         4,
         
         ## migrationsfrage
         radioButtons("migration", 
-                     label = "Nimmt der Artikel Bezug auf die Themen Migration und Integration?",
+                     label = "Migration und Integration?",
                      selected = "Bitte wählen",
                      choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
         
@@ -68,7 +167,7 @@ ui <- fluidPage(
         checkboxInput("mig_def", "Zeige erweiterte Definition.", value = F),
         conditionalPanel(
           condition = 'input.mig_def == 1',
-          fluidPage("Hierzu zählen bspw. Flüchtlingszahlen, Diskussionen um Zuwanderungs- und Einbürgerungsrechte, xenophobe Angriffe/Anschläge, migrationskritische/-feindliche Demonstrationen. ")
+          fluidPage(p("Hierzu zählen bspw. Flüchtlingszahlen, Diskussionen um Zuwanderungs- und Einbürgerungsrechte, allgemeine Berichte über Migration."))
         ),
         
         ### specific migration category
@@ -80,9 +179,6 @@ ui <- fluidPage(
                        choices = c("Bitte wählen",
                                    "Immigration (inkl. Grenzsicherung, Rückführungsdebatten, Asylrecht)", 
                                    "Integration (inkl. Einbürgerungsdebatten)", 
-                                   "Xenophobe Angriffe/Anschläge",
-                                   "Rassismus/Fremdenfeindlichkeit allgemein",
-                                   "Migrationsfeindliche/-kritische Demonstrationen/Proteste",
                                    "Sonstiges...")),
         ),
         
@@ -96,88 +192,127 @@ ui <- fluidPage(
         ### specific migration region
         conditionalPanel(
           condition = 'input.migration == "Ja" || input.migration == "Unklar"',
-          radioButtons("mig_geo",
-                       label = "Auf welche geographische Region (als Ziel der Migration) bezieht sich der Artikel?",
+          radioButtons("mig_geo_de",
+                       label = "Bezieht sich der Artikel auf Deutschland oder deutsche Politik?",
                        selected = "Bitte wählen",
-                       choices = c("Bitte wählen","Deutschland", "EU", "Rest der Welt (bspw. Mexiko-USA)", "Keines davon", "Unklar")),
+                       choices = c("Bitte wählen","Ja", "Nein", "Unklar")),
+        ),
+        
+        ### specific migration region
+        conditionalPanel(
+          condition = 'input.migration == "Ja" || input.migration == "Unklar"',
+          radioButtons("mig_geo_eu",
+                       label = "Bezieht sich der Artikel auf Europa oder Politik der EU?",
+                       selected = "Bitte wählen",
+                       choices = c("Bitte wählen","Ja", "Nein", "Unklar")),
+        ),
+        
+        
+        ### extended definition
+        conditionalPanel(
+          condition = 'input.migration == "Ja" || input.migration == "Unklar"',
+          checkboxInput("mig_geo_def", "Zeige erweiterte Definition.", value = F),
+        ),
+        conditionalPanel(
+          condition = 'input.mig_geo_def == 1',
+          fluidPage("Diese Kategorie bezieht sich auf die Migration in die EU und Migrationspolitik der EU. Politik und Migration in anderen Mitgliedsstaaten ist hiervon ausgenommen. So ist bspw. eine Anlandung Geflüchteter in Italien Migration IN die EU, aber der Versuch Geflüchteter, von Calais nach Dover zu gelangen, nicht - solange nicht auf EU Ebene diskutiert.")
+        )
+        
+      ),
+      column(
+        4,
+        radioButtons("laworder", 
+                     label = "Kriminalität, Law and Order, öffentliche Sicherheit?",
+                     selected = "Bitte wählen",
+                     choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
+        checkboxInput("law_def", "Zeige erweiterte Definition.", value = F),
+        conditionalPanel(
+          condition = 'input.law_def == 1',
+          fluidPage("Hierzu zählen bspw. Kriminalitätsstatistiken, Berichte über die Polizei und andere Sicherheitsorgane, sowie allgemeine Berichte über Kriminalität.")
+        ),
+        conditionalPanel(
+          condition = 'input.laworder == "Unklar"',
+          textInput("laworder_unklar", 
+                    label = "Weshalb unklar/über welches Thema spricht der Artikel?")
+        ),
+        
+        
+        br(),
+        radioButtons("climate", 
+                     label = "Klimapolitik/Umweltpolitik?",
+                     selected = "Bitte wählen",
+                     choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
+        checkboxInput("climate_def", "Zeige erweiterte Definition.", value = F),
+        conditionalPanel(
+          condition = 'input.climate_def == 1',
+          fluidPage("Hierzu zählt lediglich Klimapolitik (also z.B. Diskussion einer Kerosinsteuer), keine allgemeinen Beiträge zum Thema Klimawandel.")
+        ),
+        conditionalPanel(
+          condition = 'input.climate == "Unklar"',
+          textInput("climate_unklar", 
+                    label = "Weshalb unklar/über welches Thema spricht der Artikel?")
         )
         
       ),
       
       column(
-        8,
-        h3("Nimmt der Artikel Bezug auf das Thema..."),
-        column(
-          4,
-          radioButtons("laworder", 
-                       label = "Kriminalität, Law and Order, öffentliche Sicherheit?",
-                       selected = "Bitte wählen",
-                       choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
-          checkboxInput("law_def", "Zeige erweiterte Definition.", value = F),
-          conditionalPanel(
-            condition = 'input.law_def == 1',
-            fluidPage("Hinweis: Hierzu zählen bspw. Kriminalitätsstatistiken, Berichte über die Polizei und andere Sicherheitsorgane, sowie allgemeine Berichte über Kriminalität.")
-          ),
-          conditionalPanel(
-            condition = 'input.laworder == "Unklar"',
-            textInput("laworder_unklar", 
-                      label = "Weshalb unklar/über welches Thema spricht der Artikel?")
-          ),
-          
-          
-          br(),
-          radioButtons("climate", 
-                       label = "Klimapolitik/Umweltpolitik?",
-                       selected = "Bitte wählen",
-                       choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
-          checkboxInput("climate_def", "Zeige erweiterte Definition.", value = F),
-          conditionalPanel(
-            condition = 'input.climate_def == 1',
-            fluidPage("Hinweis: Hierzu zählt lediglich Klimapolitik (also z.B. Diskussion einer Kerosinsteuer), keine allgemeinen Beiträge zum Thema Klimawandel.")
-          ),
-          conditionalPanel(
-            condition = 'input.climate == "Unklar"',
-            textInput("climate_unklar", 
-                      label = "Weshalb unklar/über welches Thema spricht der Artikel?")
-          )
-          
+        4,
+        
+        br(),
+        radioButtons("social", 
+                     label = "Deutsches Sozialsystem?",
+                     selected = "Bitte wählen",
+                     choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
+        checkboxInput("social_def", "Zeige erweiterte Definition.", value = F),
+        conditionalPanel(
+          condition = 'input.social_def == 1',
+          fluidPage("Hierzu zählt der gesamte Sozialstaat, z.B. auch Leistungen im Gesundheitssystem. Diskussion um Steuern und/oder die deutsche Wirtschaft sind nur zu inkludieren wenn sie sich direkt auf solche Leistungen beziehen.")
+        ),
+        conditionalPanel(
+          condition = 'input.social == "Unklar"',
+          textInput("social_unklar", 
+                    label = "Weshalb unklar/über welches Thema spricht der Artikel?")
         ),
         
-        column(
-          4,
-          
-          br(),
-          radioButtons("social", 
-                       label = "Deutsches Sozialsystem?",
+        
+        
+        br(),
+        radioButtons("afd", 
+                     label = "Rechtsradikalismus?",
+                     selected = "Bitte wählen",
+                     choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
+        conditionalPanel(
+          condition = 'input.afd == "Unklar"',
+          textInput("afd_unklar", 
+                    label = "Weshalb unklar/über welches Thema spricht der Artikel?")),
+        checkboxInput("afd_def", "Zeige erweiterte Definition.", value = F),
+        conditionalPanel(
+          condition = 'input.afd_def == 1',
+          fluidPage("Hierzu zählen sowohl Artikel über rechtsradikale Parteien, wie beispielsweise die AfD, aber auch über rechtsradikalen Terror, xenophobe Angriffe/Anschläge, migrationskritische/-feindliche Demonstrationen oder Gruppierungen. Die Ledigliche Nennung ist nicht ausreichend.")
+        ),
+        conditionalPanel(
+          condition = 'input.afd == "Ja" || input.afd == "Unklar" ',
+          radioButtons("afd_fine", 
+                       label = "Welcher thematischen Subkategorie kann der Artikel zugeordnet werden?",
                        selected = "Bitte wählen",
-                       choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
-          checkboxInput("social_def", "Zeige erweiterte Definition.", value = F),
-          conditionalPanel(
-            condition = 'input.social_def == 1',
-            fluidPage("Hinweis: Hierzu zählt der gesamte Sozialstaat, z.B. auch Leistungen im Gesundheitssystem. Diskussion um Steuern und/oder die deutsche Wirtschaft sind nur zu inkludieren wenn sie sich direkt auf solche Leistungen beziehen.")
-          ),
-          conditionalPanel(
-            condition = 'input.social == "Unklar"',
-            textInput("social_unklar", 
-                      label = "Weshalb unklar/über welches Thema spricht der Artikel?")
-          ),
-          
-          
-          
-          br(),
-          radioButtons("afd", 
-                       label = "AfD?",
-                       selected = "Bitte wählen",
-                       choices = c("Bitte wählen", "Ja", "Nein", "Unklar")),
-          conditionalPanel(
-            condition = 'input.afd == "Unklar"',
-            textInput("afd_unklar", 
-                      label = "Weshalb unklar/über welches Thema spricht der Artikel?"))
-        )
+                       choices = c("Bitte wählen",
+                                   "Bericht über rechtsradikale Organisation",
+                                   "Xenophobe Angriffe/Anschläge",
+                                   "Rassismus/Fremdenfeindlichkeit allgemein",
+                                   "Migrationsfeindliche/-kritische Demonstrationen/Proteste",
+                                   "Sonstiges..."))
+        ),
+        ### open category
+        conditionalPanel(
+          condition = 'input.afd_fine == "Sonstiges..."',
+          textInput("afd_oth", 
+                    label = "Welcher thematischen Subkategorie kann der Artikel zugeordnet werden (Einordnung selbständig vornehmen)?")
+        ),
+        
       )
     ),
     
-    br(),
+    div(),
     
     conditionalPanel(
       condition = "(input.migration === 'Nein' || ((input.migration === 'Ja' || input.migration === 'Unklar') && input.mig_fine != 'Bitte wählen' && input.mig_geo != 'Bitte wählen'))  && input.laworder != 'Bitte wählen' && input.climate != 'Bitte wählen' && input.social != 'Bitte wählen' && input.afd != 'Bitte wählen'",
@@ -221,6 +356,13 @@ server <- function(input, output, session) {
       {
         dta <<- fread(paste0("handcoding_", input$name, ".csv"), encoding = "UTF-8")
         dta$mig_cat_oe <- as.character(dta$mig_cat_oe) # ensures correct data format when importing
+        dta$mig_geo    <- as.character(dta$mig_geo)    # ensures correct data format when importing
+        dta$mig_unklar <- as.character(dta$mig_unklar) # ensures correct data format when importing
+        dta$laworder_unklar <- as.character(dta$laworder_unklar) # ensures correct data format when importing
+        dta$climate_unklar <- as.character(dta$climate_unklar) # ensures correct data format when importing
+        dta$social_unklar <- as.character(dta$social_unklar) # ensures correct data format when importing
+        dta$afd_cat_oe <- as.character(dta$afd_cat_oe) # ensures correct data format when importing
+        dta$afd_unklar <- as.character(dta$afd_unklar) # ensures correct data format when importing
       }, error = function(e){
         showModal(modalDialog(
           title = paste0("Keine existierende Datei gefunden: 'handcoding_", input$name, ".csv'. Sicher, dass Du den Namen korrekt angegeben hast?"),
@@ -248,6 +390,8 @@ server <- function(input, output, session) {
     
     # define initial text
     i <<- 1
+    rowsToCode <<- nrow(dta)
+    
     output$Title <- renderText(as.character(dta$title[i]))
     output$Text <- renderText(as.character(dta$text[i]))
     
@@ -264,7 +408,6 @@ server <- function(input, output, session) {
     dta$social_unklar   <<- NA_character_
     dta$afd             <<- NA_character_
     dta$afd_unklar      <<- NA_character_
-    rowsToCode <<- nrow(dta)
     
     removeModal()
   })
@@ -308,7 +451,7 @@ server <- function(input, output, session) {
     dta[i, "mig"]             <<- input$migration
     dta[i, "mig_cat"]         <<- input$mig_fine
     dta[i, "mig_cat_oe"]      <<- input$mig_oth
-    dta[i, "mig_geo"]         <<- ifelse(input$mig_geo != "Bitte wählen", input$mig_geo, "")
+    dta[i, "mig_geo"]         <<- ifelse(length(input$mig_geo) == 0, "", input$mig_geo)
     dta[i, "mig_unklar"]      <<- input$mig_unklar
     dta[i, "laworder"]        <<- input$laworder
     dta[i, "laworder_unklar"] <<- input$laworder_unklar
@@ -317,6 +460,8 @@ server <- function(input, output, session) {
     dta[i, "social"]          <<- input$social
     dta[i, "social_unklar"]   <<- input$social_unklar
     dta[i, "afd"]             <<- input$afd
+    dta[i, "afd_cat"]         <<- input$afd_fine
+    dta[i, "afd_cat_oe"]      <<- input$afd_oth
     dta[i, "afd_unklar"]      <<- input$afd_unklar
     
     if (i < nrow(dta)){
@@ -327,7 +472,8 @@ server <- function(input, output, session) {
       output$Text <- renderText(as.character(dta$text[i]))
       
       # Update radiobuttons
-      for (x in c("migration", "mig_fine", "mig_geo", "laworder", "climate", "social", "afd")){
+      for (x in c("migration", "mig_fine", "mig_geo", "mig_geo_de", "mig_geo_eu", 
+                  "laworder", "climate", "social", "afd", "afd_fine")){
         updateRadioButtons(session = session, inputId =  x, selected = "Bitte wählen")
       }
       
