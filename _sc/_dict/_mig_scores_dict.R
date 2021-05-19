@@ -29,6 +29,7 @@ for (p in papers){
   ## load newspaper articles
   cat("\n\tLoading data...")
   raw <- fread(here(paste0("_dt/_out/_", p, "_articles.csv")), encoding = "UTF-8")[,c("title", "url", "text")]
+  raw <- raw[text != "",]
   ncols_raw <- ncol(raw)
   
   # assign scores & sample ####
@@ -54,6 +55,35 @@ for (p in papers){
                                raw$sum <= quantiles_nozero[4]], n_sample)
   high_sample <- sample_n(raw[raw$sum > quantiles_nozero[4]], n_sample)
   
+  ## check language, keep german
+  low_sample <-  low_sample[cld2::detect_language(low_sample$text) == "de",]
+  mid_sample <-  mid_sample[cld2::detect_language(mid_sample$text) == "de",]
+  high_sample <- high_sample[cld2::detect_language(high_sample$text) == "de",]
+  
+  ## resample LOW_SAMPLE if necessary
+  while (nrow(low_sample) < n_sample){
+      resample <- sample_n(raw[raw$sum == 0], (n_sample-nrow(low_sample)))
+      resample <- resample[(cld2::detect_language(resample$text) == "de") &
+                             (!resample$url %in% low_sample$url)]
+      low_sample <- rbind(low_sample, resample)
+    }
+  
+  ## resample mid_sample
+  while (nrow(mid_sample) < n_sample){
+    resample <- sample_n(raw[raw$sum >= quantiles_nozero[2] &
+                               raw$sum <= quantiles_nozero[4]], (n_sample-nrow(mid_sample)))
+    resample <- resample[(cld2::detect_language(resample$text) == "de") &
+                           (!resample$url %in% mid_sample$url)]
+    mid_sample <- rbind(mid_sample, resample)
+  }
+
+  ## resample high_sample
+  while (nrow(high_sample) < n_sample){
+    resample <- sample_n(raw[raw$sum > quantiles_nozero[4]], (n_sample-nrow(high_sample)))
+    resample <- resample[(cld2::detect_language(resample$text) == "de") &
+                           (!resample$url %in% high_sample$url)]
+    high_sample <- rbind(high_sample, resample)
+  }
   
   ## combine to overall sample
   if(!"full_sample" %in% ls()){
@@ -61,6 +91,7 @@ for (p in papers){
   }else{
     full_sample <- rbind(full_sample, low_sample, mid_sample, high_sample)
   }
+  
   
 }
 
