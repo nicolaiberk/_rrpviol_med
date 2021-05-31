@@ -309,10 +309,13 @@ ui <- fluidPage(
                     label = "Welcher thematischen Subkategorie kann der Artikel zugeordnet werden (Einordnung selbständig vornehmen)?")
         ),
         
+        actionButton("setToNo", "Keine der Kategorien genannt")
+        
       )
     ),
     
     div(),
+    
     
     conditionalPanel(
       condition = "(input.migration === 'Nein' || ((input.migration === 'Ja' || input.migration === 'Unklar') && input.mig_fine != 'Bitte wählen' && input.mig_geo != 'Bitte wählen'))  && input.laworder != 'Bitte wählen' && input.climate != 'Bitte wählen' && input.social != 'Bitte wählen' && input.afd != 'Bitte wählen'",
@@ -498,6 +501,12 @@ server <- function(input, output, session) {
     }
     
     
+  })
+  
+  observeEvent(input$setToNo, {
+    for (x in c("migration", "laworder", "climate", "social", "afd")){
+      updateRadioButtons(session = session, inputId =  x, selected = "Nein")
+    }
   })
   
   observeEvent(input$back, {
