@@ -358,6 +358,8 @@ server <- function(input, output, session) {
     tryCatch(
       {
         dta <<- fread(paste0("handcoding_", input$name, ".csv"), encoding = "UTF-8", na.strings = NULL)
+        dta$text <<- sapply(dta[,"text"], gsub, pattern = '\"', replacement = "") # fixes issue with duplication of quotation marks
+        
       }, error = function(e){
         showModal(modalDialog(
           title = paste0("Keine existierende Datei gefunden: 'handcoding_", input$name, ".csv'. Sicher, dass Du den Namen korrekt angegeben hast?"),
@@ -392,6 +394,8 @@ server <- function(input, output, session) {
     # import sample
     dta <<- fread("sample_handcoding.csv", encoding = "UTF-8")[, c("title", "url", "text")]
     dta <<- sample_n(dta, nrow(dta))  # reorder rows
+    dta$text <<- sapply(dta[,"text"], gsub, pattern = '\"', "") # fixes issue with duplication of quotation marks
+    
     
     # define initial text
     i <<- 1
