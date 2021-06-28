@@ -352,13 +352,13 @@ server <- function(input, output, session) {
   
   observeEvent(input$loadfile, {
     
-    removeModal()
     
     # import sample
     tryCatch(
       {
         dta <<- fread(paste0("handcoding_", input$name, ".csv"), encoding = "UTF-8", na.strings = NULL)
         dta$text <<- sapply(dta[,"text"], gsub, pattern = '\"', replacement = "") # fixes issue with duplication of quotation marks
+        dta$title <<- sapply(dta[,"title"], gsub, pattern = '\"', replacement = "") # fixes issue with duplication of quotation marks
         
       }, error = function(e){
         showModal(modalDialog(
@@ -386,6 +386,8 @@ server <- function(input, output, session) {
     output$Title <- renderText(as.character(dta$title[i]))
     output$Text <- renderText(as.character(dta$text[i]))
     
+    removeModal()
+    
   })
   
   
@@ -395,7 +397,7 @@ server <- function(input, output, session) {
     dta <<- fread("sample_handcoding.csv", encoding = "UTF-8")[, c("title", "url", "text")]
     dta <<- sample_n(dta, nrow(dta))  # reorder rows
     dta$text <<- sapply(dta[,"text"], gsub, pattern = '\"', "") # fixes issue with duplication of quotation marks
-    
+    dta$title <<- sapply(dta[,"title"], gsub, pattern = '\"', replacement = "") # fixes issue with duplication of quotation marks
     
     # define initial text
     i <<- 1
