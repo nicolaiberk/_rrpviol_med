@@ -85,7 +85,7 @@ EmbeddingGenerator <- function(paper, textcol, is_csv) {
   model <- word2vec(x = dta_clean, type = "cbow", dim =200, iter = 20)
   
   ## save model
-  write.word2vec(model, here(paste0("_sc/_emb_models/", paper, ".bin")))
+  write.word2vec(model, here(paste0("_dt/_emb_models/", paper, ".bin")))
 }
 
 
@@ -108,7 +108,7 @@ for (row in 1:6){ # change to 1:6 if full re-run is necessary
 
 
 # # test
-# model <- read.word2vec(here(paste0("_sc/_emb_models/weltonline.bin")))
+# model <- read.word2vec(here(paste0("_dt/_emb_models/weltonline.bin")))
 # embedding <- as.matrix(model)
 # predict(model, "migration", type = "nearest", top_n = 10)
                        

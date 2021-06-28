@@ -26,7 +26,7 @@ library(pbapply)
 
 DictionaryExpander <- function(paper, union_size, seed_dict, top_n) {
   ## load model
-  model <- read.word2vec(here(paste0("_sc/_dict/_emb_models/", paper, ".bin")))
+  model <- read.word2vec(here(paste0("_dt/_emb_models/", paper, ".bin")))
   
   ## create matrix for embeddings
   embedding <- as.matrix(model)
@@ -110,12 +110,12 @@ for (p in paper){
 ## see https://deepset.ai/german-word-embeddings (GloVe)
 
 ## load pre-trained embeddings, if not already (get a coffee, this runs a bit)
-if (!file.exists('_emb_models/glove.german.txt')) {
+if (!file.exists(here('_dt/_emb_models/glove.german.txt'))) {
   download.file('https://int-emb-glove-de-wiki.s3.eu-central-1.amazonaws.com/vectors.txt', 
-                destfile = '_emb_models/glove.german.txt')
+                destfile = here('_dt/_emb_models/glove.german.txt'))
 }
 
-vectors = data.table::fread('_emb_models/glove.german.txt', data.table = F,  encoding = 'UTF-8')
+vectors = data.table::fread(here('_dt/_emb_models/glove.german.txt'), data.table = F,  encoding = 'UTF-8')
 colnames(vectors) = c('word', paste('dim', 1:(dim(vectors)[2] - 1), sep = '_'))
 embeddings <- as.matrix(vectors[2:301])
 row.names(embeddings) <- vectors$word; rm(vectors)
@@ -129,15 +129,15 @@ cosin_matrix <- matrix(nrow = nrow(embeddings), ncol = length(temp_dict))
 colnames(cosin_matrix) <- temp_dict
 row.names(cosin_matrix) <- row.names(embeddings)
 
-if (!file.exists('_emb_models/glove_cosine.Rda')) {
+if (!file.exists(here('_dt/_emb_models/glove_cosine.Rda'))) {
   for (term in temp_dict){
     print(paste("Calculating cosine similarity of", term, "to all other terms..."))
     cosin_matrix[, term] <- pbapply(embeddings, MARGIN = 1, FUN = cosine, y = embeddings[term, ])
   }
-  save(cosin_matrix, file = "_emb_models/glove_cosine.Rda")
+  save(cosin_matrix, file = here("_dt/_emb_models/glove_cosine.Rda"))
 }
 
-load('_emb_models/glove_cosine.Rda')
+load(here('_dt/_emb_models/glove_cosine.Rda'))
 
 
 ## define migration dictionary
