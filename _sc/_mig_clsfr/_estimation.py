@@ -3,45 +3,59 @@ import pickle
 import os
 import pandas as pd
 import csv
+import sys
+import numpy as np
 
 os.chdir('..')
 
 
+
+csv.field_size_limit(sys.maxsize)
+
 clf = joblib.load('classifier.pkl')
 vectorizer = pickle.load(open('vectorizer.pkl', mode='rb'))
 textrow = 5
-fieldnames = ['date', 'paper', 'title', 'link', 'mig_pred', 'mig_proba']
-
-if os.path.isfile('_data/_estimations.csv'):
-    i = pd.read_csv('_data/_estimations.csv').shape[0] # set starting point
-else:
-    i = 0
+fieldnames = ['date', 'paper', 'title', 'link', 'topic', 'mig_pred', 'mig_proba']
 
 
-with open('_data/_merged_articles.csv', mode="r", encoding="utf-8") as fi:
-    reader = csv.reader(fi)
-    next(reader) # skip header
-    
-    for skip in range(i+1):
-        next(reader)
-    
-    
-    with open('_data/_estimations.csv', mode="a", encoding="utf-8") as fo:
-        
-        writer = csv.DictWriter(fo, lineterminator = '\n', fieldnames = fieldnames)
-        writer.writeheader()
-        
+
+for paper in os.listdir('_data/Archive/'):
+    with open('_data/Archive/'+paper, mode="r", encoding="utf-8") as fi:
+        reader = csv.reader(fi)
+
         for row in reader:
-            i += 1
-            mtrx = vectorizer.transform(pd.array([row[textrow]]))
-            pred = clf.predict(mtrx)[0]
-            proba = clf.predict_proba(mtrx)[0][1]
-            writer.writerow({'date':         row[0], 
-                             'paper':        row[6], 
-                             'title':        row[1], 
-                             'link':         row[2],
-                             'mig_pred':     pred,
-                             'mig_proba':    proba})
-            
-            print(f'Classified {i} speeches (of ~3.5M). Current Journal: {row[6]}', end="\r")
+            # define relative position in row based on title
+            titlerow = np.argmax([r == 'title' for r in row])
+            linkrow  = np.argmax([r == 'url'   for r in row])
+            daterow  = np.argmax([r == 'date'  for r in row])
+            textrow  = np.argmax([r == 'text'  for r in row])
+            topicrow = np.argmax([r == 'topic' for r in row])
+            break
+        if os.path.isfile('_data/_estimates'+paper):
+            i = pd.read_csv('_data/_estimates'+paper).shape[0] # set starting point
+        else:
+            i = 0
+        
+        for skip in range(i):
+            next(reader)
 
+
+        with open('_data/_estimates'+paper, mode="a", encoding="utf-8") as fo:
+
+            writer = csv.DictWriter(fo, lineterminator = '\n', fieldnames = fieldnames)
+            writer.writeheader()
+
+            for row in reader:
+                i += 1
+                mtrx = vectorizer.transform(pd.array([row[textrow]]))
+                pred = clf.predict(mtrx)[0]
+                proba = clf.predict_proba(mtrx)[0][1]
+                writer.writerow({'date':         row[daterow], 
+                                 'paper':        paper, 
+                                 'title':        row[titlerow], 
+                                 'link':         row[linkrow], 
+                                 'topic':        row[topicrow],
+                                 'mig_pred':     pred,
+                                 'mig_proba':    proba})
+                print(f'Classified {i} speeches. Current file: {paper}', end="\r")
+            print(f'Finished estimating {i} speeches ({paper})\n')
