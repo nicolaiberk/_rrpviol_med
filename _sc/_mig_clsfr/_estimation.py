@@ -6,21 +6,21 @@ import csv
 import sys
 import numpy as np
 
-os.chdir('..')
+os.chdir('../..')
 
 
 
 csv.field_size_limit(sys.maxsize)
 
-clf = joblib.load('classifier.pkl')
-vectorizer = pickle.load(open('vectorizer.pkl', mode='rb'))
+clf = joblib.load('_dt/classifier.pkl')
+vectorizer = pickle.load(open('_dt/vectorizer.pkl', mode='rb'))
 textrow = 5
 fieldnames = ['date', 'paper', 'title', 'link', 'topic', 'mig_pred', 'mig_proba']
 
 
 
-for paper in os.listdir('_data/Archive/'):
-    with open('_data/Archive/'+paper, mode="r", encoding="utf-8") as fi:
+for paper in os.listdir('_dt/2019_data/'):
+    with open('_dt/2019_data/'+paper, mode="r", encoding="utf-8") as fi:
         reader = csv.reader(fi)
 
         for row in reader:
@@ -31,8 +31,8 @@ for paper in os.listdir('_data/Archive/'):
             textrow  = np.argmax([r == 'text'  for r in row])
             topicrow = np.argmax([r == 'topic' for r in row])
             break
-        if os.path.isfile('_data/_estimates'+paper):
-            i = pd.read_csv('_data/_estimates'+paper).shape[0] # set starting point
+        if os.path.isfile('_dt/_mig_estimates/_2019_estimates_'+paper):
+            i = pd.read_csv('_dt/_mig_estimates/_2019_estimates'+paper).shape[0] # set starting point
         else:
             i = 0
         
@@ -40,7 +40,7 @@ for paper in os.listdir('_data/Archive/'):
             next(reader)
 
 
-        with open('_data/_estimates'+paper, mode="a", encoding="utf-8") as fo:
+        with open('_dt/_mig_estimates/_2019_estimates'+paper, mode="a", encoding="utf-8") as fo:
 
             writer = csv.DictWriter(fo, lineterminator = '\n', fieldnames = fieldnames)
             writer.writeheader()

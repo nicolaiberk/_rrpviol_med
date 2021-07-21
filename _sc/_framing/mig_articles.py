@@ -10,7 +10,7 @@ import sys
 csv.field_size_limit(sys.maxsize)
 
 ## set wd
-os.chdir("/home/nico/Documents/Projects/_rrpviol_med/")
+os.chdir("/home/nico/Projects/_rrpviol_med/")
 
 ## get urls for all migration-related articles
 os.chdir("_dt/_mig_estimates")
@@ -44,9 +44,9 @@ print(f"Found {len(mig_urls)} articles about migration, {len(np.unique(mig_urls)
 mig_urls = np.unique(mig_urls)
 
 ## write all mig articles to new file
-os.chdir("/home/nico/Documents/Projects/_rrpviol_med/_dt/_out")
+os.chdir("/home/nico/Projects/_rrpviol_med/_dt/_out")
 
-filename = "_migration_articles.csv"
+filename = "_migration_articles_new.csv"
 
 m = 0
 
@@ -55,7 +55,7 @@ for rawfile in os.listdir("Archive"):
         print(f"Reading {rawfile}...")
         reader = csv.reader(fi)
         
-        paper = re.match("_([a-z]*)_articles.csv", rawfile).group(1)
+        paper = re.match("_([a-z]*).*.csv", rawfile).group(1)
         i = 0
         
         for row in reader:
