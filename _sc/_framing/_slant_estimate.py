@@ -7,14 +7,14 @@ from nltk.tokenize import RegexpTokenizer
 
 
 ## set wd
-os.chdir("/home/nico/Documents/Projects/_rrpviol_med/")
+os.chdir("/home/nico/Projects/_rrpviol_med/")
 
 ## load classifier and vectorizer
 clf = joblib.load('_dt/bitrigram_classifier.pkl')
 vectorizer = pickle.load(open('_dt/bitrigram_vectorizer.pkl', mode='rb'))
 
 ## load data
-mig_articles = pd.read_csv('_dt/_out/_migration_btgrams.csv')
+mig_articles = pd.read_csv('_dt/_out/_migration_btgrams_new.csv')
 
 ## preprocess articles
 DocTokenizer = RegexpTokenizer(r'\w+')
@@ -30,4 +30,4 @@ mig_articles['pred'] = clf.predict(mtrx)
 mig_articles['proba'] = [est[1] for est in clf.predict_proba(mtrx)]
 
 ## save
-mig_articles.to_csv('_dt/_out/_migration_slant.csv')
+mig_articles.to_csv('_dt/_out/_migration_slant_new.csv')

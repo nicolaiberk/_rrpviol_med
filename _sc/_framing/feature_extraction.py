@@ -12,11 +12,11 @@ import pickle
 
 
 ## set wd
-os.chdir("/home/nico/Documents/Projects/_rrpviol_med/")
+os.chdir("/home/nico/Projects/_rrpviol_med/")
 
 ## load data
 print('Loading data...')
-dta = pd.read_csv('_dt/_out/_migration_articles.csv', header=0)
+dta = pd.read_csv('_dt/_out/_migration_articles_new.csv', header=0)
 print('\tDone!')
 
 ## preprocess
@@ -40,8 +40,8 @@ print('Saving...')
 dta_fin = pd.concat([dta, btmtrx], axis = 1)
 
 ## write
-dta.to_csv("_dt/_out/_migration_btgrams.csv")
+dta.to_csv("_dt/_out/_migration_btgrams_new.csv")
 
 ## save vectorizer
-pickle.dump(vec, open("_dt/bitrigram_vectorizer.pkl",mode='wb'))
+pickle.dump(vec, open("_dt/bitrigram_new_vectorizer.pkl",mode='wb'))
 print('\tDone!')
