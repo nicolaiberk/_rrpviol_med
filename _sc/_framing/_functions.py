@@ -35,13 +35,3 @@ def TextCleaner(docs):
     tokens = [' '.join(t) for t in tokens] # joins into single string
     
     return tokens, stems
-
-
-# def Vectorizer(tokens, vec_type = 'tfidf'):
-#     if vec_type == 'tfidf':
-#         vectorizer = TfidfVectorizer(max_df=.5, min_df=5)
-#     else:
-#         vectorizer = CountVectorizer(max_df=.5, min_df=5)
-        
-#     mtrx = vectorizer.fit_transform(tokens)
-#     return mtrx
