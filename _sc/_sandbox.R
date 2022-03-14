@@ -19,15 +19,17 @@ library(data.table)
 library(vars)
 library(tseries)
 library( ggplot2 )
+library(stringr)
 
-setwd( '/Users/krausewz/Dropbox (Maestral)/_git.pprs/_rrpviol_med/' )
+tryCatch(setwd( '/Users/krausewz/Dropbox (Maestral)/_git.pprs/_rrpviol_med/' ))
+tryCatch( setwd( 'C:/Users/nicol/Dropbox/PhD/Projects/_rrpviol_med' ))
 
 # load data ####
 load( '_dt/_mig_estimates/mig_articles_topics.Rdata')
 load( '_dt/_out/_daily.Rdata')
+afd_slant <- read.csv("_dt/_mig_estimates/_migration_slant_BERT.csv")
 
 # aggregate newspaper estimates for each day and merge
-
 fulltable <- 
   output %>% 
   group_by(paper, date_new) %>% 
@@ -55,6 +57,56 @@ fulltable <-
   full_join(x = ., y = w, by = c('date2', 'source')) %>% 
   filter(!is.na(natt))
 
+rm(output)
+rm(w)
+
+## merge afd slant estimates
+fulltable <- 
+  afd_slant %>% 
+  filter(date != '') %>% 
+  mutate(date2 = ifelse(paper == 'bild', as.Date(date, format = '%Y-%m-%d'), as.Date(NA))) %>% # fix dates
+  mutate(date2 = ifelse(paper == 'spon', as.Date(date, format = '%d.%m.%Y'), date2)) %>% 
+  mutate(date2 = ifelse(!paper %in% c('bild', 'spon'),  as.Date(as.numeric(date), origin = '1970-01-01'), date2)) %>% 
+  mutate(date2 = as.Date(date2)) %>% 
+  dplyr::select(-date) %>% 
+  mutate(source = ifelse(paper == 'weltonline', 'welt', paper)) %>% 
+  group_by(source, date2) %>% 
+  summarise(slant_afd_resampled_avg_pred  = mean(pred_resampled),
+            slant_afd_resampled_avg_proba = mean(proba_resampled),
+            slant_afd_1819_avg_pred  = mean(pred_1819),
+            slant_afd_1819_avg_proba = mean(proba_1819)) %>% 
+  right_join(x = ., y = fulltable, by = c('date2', 'source')) %>% 
+  dplyr::select(-paper)
+
+rm(afd_slant)
+
+## add different operationalisations of migration estimates
+bert_estimates <- read.csv('_dt/_mig_estimates/BERT_estimates_cleaned.csv')
+
+# find papers based on urls
+bert_estimates <- 
+  bert_estimates %>%
+  # sample_n(1000) %>% 
+  mutate(paper = str_match(link, pattern = '.*(bild)\\.de.*')[,2]) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(faz)\\.net.*')[,2]        , paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(welt)\\.de.*')[,2]        , paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(taz)\\.de.*')[,2]         , paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(spiegel)\\.de.*')[,2]     , paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(sueddeutsche)\\.de.*')[,2], paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(jetzt)\\.de.*')[,2]       , paper)) %>%
+  mutate(paper = ifelse(is.na(paper), str_match(link, pattern = '.*(dctp)\\.tv.*')[,2]        , paper)) %>% 
+  filter(!is.na(paper))
+
+bert_estimates <- 
+  bert_estimates %>% 
+  mutate( paper = ifelse(paper == 'dctp', 'spon', paper)) %>% 
+  mutate( paper = ifelse(paper == 'spiegel', 'spon', paper)) %>% 
+  mutate( paper = ifelse(paper == 'sueddeutsche', 'sz', paper)) %>% 
+  mutate( paper = ifelse(paper == 'jetzt', 'sz', paper))
+
+
+
+## merge rr attack data petra pau
 pp <- readr::read_csv( '/Users/krausewz/_hu_box/_gits/_pprs/_21_rrpviol_med_active/_rrpviol_med/_dt/rr_crim_petrapau/akt. Datensatz rechtsextremistische Kriminalität nach Bundesländern.csv' )
 
 pp %<>% filter( stringr::str_detect( Time , 'gesamt' ) == FALSE )

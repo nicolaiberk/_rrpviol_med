@@ -6,6 +6,7 @@ library( dplyr )
 
 tryCatch( setwd( '/Users/krausewz/Dropbox (Maestral)/_git.pprs/_rrpviol_med/' ))
 tryCatch( setwd( '/Users/base/Dropbox (Maestral)/_git.pprs/_rrpviol_med/' ))
+tryCatch( setwd( 'C:/Users/nicol/Dropbox/PhD/Projects/_rrpviol_med' ))
 load( '_dt/daily_combined.Rdate' )
 
 head( d )

@@ -34,13 +34,13 @@ tryCatch({
   })
 
 # load data ####
-load( '_dt/_mig_estimates/daily_mig_topics2022-01-31.Rdata')
+load( '_dt/_mig_estimates/mig_articles_topics2022-01-31.Rdata')
 load( '_dt/_out/_daily.Rdata')
 afd_slant <- read.csv("_dt/_mig_estimates/_migration_slant_BERT.csv")
 
 # aggregate newspaper estimates for each day and merge
 fulltable <- 
-  prevalence_daily %>% 
+  output %>% 
   group_by(paper, date_new) %>% 
   summarise(
     crime_tot = sum(crime),
@@ -68,7 +68,7 @@ fulltable <-
   full_join(x = ., y = w, by = c('date2', 'source')) %>% 
   filter(!is.na(natt))
 
-rm(prevalence_daily)
+rm(output)
 rm(w)
 
 ## merge afd slant estimates
